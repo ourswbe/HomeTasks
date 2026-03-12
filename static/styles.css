@@ -1,0 +1,158 @@
+:root {
+  --bg: #f4f7ff;
+  --card: #ffffff;
+  --text: #20253a;
+  --muted: #5a637f;
+  --primary: #4f6df5;
+  --danger: #ef4444;
+  --success: #16a34a;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: "Inter", "Segoe UI", sans-serif;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(120deg, #edf2ff, #f6f9ff);
+  color: var(--text);
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: #1f2a5a;
+  color: white;
+}
+
+.topbar a {
+  color: #dbe3ff;
+  text-decoration: none;
+  margin-left: 1rem;
+}
+
+.brand {
+  font-weight: 700;
+  font-size: 1.2rem;
+}
+
+.container {
+  max-width: 960px;
+  margin: 1.5rem auto;
+  padding: 0 1rem;
+}
+
+.auth-card,
+.filter-panel,
+.hero,
+.task-card {
+  background: var(--card);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(39, 62, 130, 0.08);
+  padding: 1rem 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.auth-card {
+  max-width: 520px;
+  margin: 2rem auto;
+}
+
+.auth-card.wide {
+  max-width: 700px;
+}
+
+.form-grid {
+  display: grid;
+  gap: 0.9rem;
+}
+
+input,
+select,
+textarea,
+button,
+.ghost-btn {
+  width: 100%;
+  border: 1px solid #d4dcf4;
+  border-radius: 10px;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.95rem;
+}
+
+button {
+  background: var(--primary);
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.ghost-btn {
+  display: inline-block;
+  text-align: center;
+  text-decoration: none;
+  background: #f2f5ff;
+  color: var(--muted);
+}
+
+.filter-form {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 0.7rem;
+}
+
+.cards {
+  display: grid;
+  gap: 1rem;
+}
+
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.badge {
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  background: #e8eeff;
+  color: #2746c4;
+  font-size: 0.8rem;
+}
+
+.overdue {
+  border-left: 4px solid var(--danger);
+}
+
+.status.success {
+  color: var(--success);
+  font-weight: 700;
+}
+
+.flash-wrap {
+  margin-bottom: 1rem;
+}
+
+.flash {
+  border-radius: 10px;
+  padding: 0.7rem;
+  margin-bottom: 0.5rem;
+}
+
+.flash.success {
+  background: #e8fbe8;
+  color: #166534;
+}
+
+.flash.error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.flash.warning {
+  background: #fff7db;
+  color: #8a6400;
+}

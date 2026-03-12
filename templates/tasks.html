@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Задания | HomeTasks{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>Здравствуйте, {{ user.name }}!</h1>
+  <p>
+    Роль: <strong>{{ 'Учитель' if user.role == 'teacher' else 'Ученик' }}</strong>
+  </p>
+</section>
+
+<section class="filter-panel">
+  <form method="get" class="filter-form">
+    <input type="text" name="subject" placeholder="Фильтр по предмету" value="{{ subject_filter }}" list="subjects" />
+    <datalist id="subjects">
+      {% for subject in subjects %}
+        <option value="{{ subject }}"></option>
+      {% endfor %}
+    </datalist>
+    <button type="submit">Применить</button>
+    <a class="ghost-btn" href="{{ url_for('tasks') }}">Сброс</a>
+  </form>
+</section>
+
+<section class="cards">
+  {% for task in tasks %}
+    <article class="task-card {% if task.deadline < now %}overdue{% endif %}">
+      <div class="task-header">
+        <h3>{{ task.title }}</h3>
+        <span class="badge">{{ task.subject }}</span>
+      </div>
+      <p>{{ task.description }}</p>
+      <p><strong>Дедлайн:</strong> {{ task.deadline.strftime('%d.%m.%Y %H:%M') }}</p>
+
+      {% if user.role == 'student' %}
+        {% if task.id in completed_task_ids %}
+          <p class="status success">✅ Выполнено</p>
+        {% else %}
+          <form method="post" action="{{ url_for('complete_task', task_id=task.id) }}">
+            <button type="submit">Отметить выполненным</button>
+          </form>
+        {% endif %}
+      {% endif %}
+    </article>
+  {% else %}
+    <p>Заданий пока нет.</p>
+  {% endfor %}
+</section>
+{% endblock %}

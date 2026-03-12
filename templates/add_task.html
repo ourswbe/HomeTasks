@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Добавить задание | HomeTasks{% endblock %}
+{% block content %}
+<section class="auth-card wide">
+  <h1>Новое задание</h1>
+  <form method="post" class="form-grid">
+    <label>Предмет
+      <input type="text" name="subject" required />
+    </label>
+    <label>Название
+      <input type="text" name="title" required />
+    </label>
+    <label>Описание
+      <textarea name="description" rows="4" required></textarea>
+    </label>
+    <label>Дедлайн
+      <input type="datetime-local" name="deadline" required />
+    </label>
+    <button type="submit">Сохранить</button>
+  </form>
+</section>
+{% endblock %}
