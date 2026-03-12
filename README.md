@@ -56,3 +56,43 @@ docker compose up --build
 - `/login` — авторизация.
 - `/tasks` — список заданий, фильтр по предмету, отправка решений и проверка.
 - `/tasks/add` — добавление задания (только для учителя).
+
+## Почему GitHub пишет "This branch has conflicts"
+
+Это не ошибка приложения. Это конфликт Git между вашей веткой PR и целевой веткой (обычно `main`):
+
+- в обоих местах изменены одни и те же файлы (`README.md`, `app.py`, `templates/tasks.html` и т.д.);
+- GitHub не может автоматически выбрать «чью» версию оставить.
+
+### Как исправить
+
+1. Заберите актуальную целевую ветку.
+2. Влейте её в свою ветку PR (или сделайте rebase).
+3. Вручную решите конфликтные блоки `<<<<<<<`, `=======`, `>>>>>>>`.
+4. Закоммитьте и отправьте изменения.
+
+Пример через merge:
+
+```bash
+git checkout <your-pr-branch>
+git fetch origin
+git merge origin/main
+# решить конфликты
+git add .
+git commit -m "Resolve merge conflicts with main"
+git push
+```
+
+Пример через rebase:
+
+```bash
+git checkout <your-pr-branch>
+git fetch origin
+git rebase origin/main
+# решить конфликты
+# затем для каждого шага:
+git add .
+git rebase --continue
+# в конце:
+git push --force-with-lease
+```
