@@ -156,3 +156,49 @@ button {
   background: #fff7db;
   color: #8a6400;
 }
+
+.options-box {
+  background: #f7f9ff;
+  border: 1px solid #dde5ff;
+  padding: 0.7rem;
+  border-radius: 10px;
+  margin: 0.6rem 0;
+}
+
+.submission-block {
+  margin-top: 0.7rem;
+}
+
+.submission-block summary {
+  cursor: pointer;
+  color: #2746c4;
+  font-weight: 600;
+}
+
+.status.pending {
+  color: #8a6400;
+  font-weight: 600;
+}
+
+.teacher-box {
+  margin-top: 0.8rem;
+  padding-top: 0.8rem;
+  border-top: 1px dashed #d4dcf4;
+}
+
+.submission-item {
+  border: 1px solid #e4e9fb;
+  border-radius: 10px;
+  padding: 0.7rem;
+  margin-top: 0.6rem;
+}
+
+.review-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.review-form .ghost-btn {
+  width: 100%;
+}

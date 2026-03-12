@@ -13,10 +13,34 @@
     <label>Описание
       <textarea name="description" rows="4" required></textarea>
     </label>
+    <label>Тип задания
+      <select name="task_type" id="task_type" required>
+        <option value="text">Обычное (текст / ссылка / фото)</option>
+        <option value="multiple_choice">Тест (multiple choice)</option>
+      </select>
+    </label>
+    <label id="options_block">Варианты ответа для теста (каждый с новой строки)
+      <textarea name="options" rows="4" placeholder="Например:
+A) 1941
+B) 1945
+C) 1939"></textarea>
+    </label>
     <label>Дедлайн
       <input type="datetime-local" name="deadline" required />
     </label>
     <button type="submit">Сохранить</button>
   </form>
 </section>
+
+<script>
+  const taskType = document.getElementById('task_type');
+  const optionsBlock = document.getElementById('options_block');
+
+  function toggleOptions() {
+    optionsBlock.style.display = taskType.value === 'multiple_choice' ? 'block' : 'none';
+  }
+
+  taskType.addEventListener('change', toggleOptions);
+  toggleOptions();
+</script>
 {% endblock %}
