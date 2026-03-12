@@ -132,6 +132,16 @@ button {
   font-weight: 700;
 }
 
+.status.pending {
+  color: #8a6400;
+  font-weight: 600;
+}
+
+.status.grade {
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
 .flash-wrap {
   margin-bottom: 1rem;
 }
@@ -175,9 +185,11 @@ button {
   font-weight: 600;
 }
 
-.status.pending {
-  color: #8a6400;
-  font-weight: 600;
+.teacher-comment {
+  background: #f8fafc;
+  border-left: 4px solid #94a3b8;
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
 }
 
 .teacher-box {
@@ -197,6 +209,16 @@ button {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
+}
+
+.review-form textarea {
+  resize: vertical;
+  min-height: 72px;
+}
+
+.review-form input,
+.review-form textarea {
+  grid-column: span 2;
 }
 
 .review-form .ghost-btn {

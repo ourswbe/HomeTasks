@@ -32,6 +32,7 @@ class Task(db.Model):
     teacher_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     task_type = db.Column(db.String(20), nullable=False, default="text")  # text | multiple_choice
     options_json = db.Column(db.Text, nullable=True)
+    max_score = db.Column(db.Integer, nullable=False, default=100)
 
     @property
     def options(self):
@@ -52,6 +53,8 @@ class Submission(db.Model):
     answer_image_url = db.Column(db.String(500), nullable=True)
     selected_option = db.Column(db.String(255), nullable=True)
     status = db.Column(db.String(20), nullable=False, default="submitted")  # submitted | completed
+    grade = db.Column(db.Integer, nullable=True)
+    teacher_comment = db.Column(db.Text, nullable=True)
     submitted_at = db.Column(db.DateTime, default=datetime.utcnow)
     reviewed_at = db.Column(db.DateTime, nullable=True)
 
@@ -224,6 +227,7 @@ def add_task():
         deadline_raw = request.form.get("deadline", "").strip()
         task_type = request.form.get("task_type", "text").strip()
         options_raw = request.form.get("options", "").strip()
+        max_score_raw = request.form.get("max_score", "100").strip()
 
         if not all([subject, title, description, deadline_raw]):
             flash("Заполните все поля задания.", "error")
@@ -231,6 +235,14 @@ def add_task():
 
         if task_type not in {"text", "multiple_choice"}:
             flash("Выберите корректный тип задания.", "error")
+            return render_template("add_task.html", user=user)
+
+        try:
+            max_score = int(max_score_raw)
+            if max_score < 1:
+                raise ValueError
+        except ValueError:
+            flash("Максимальный балл должен быть целым числом больше 0.", "error")
             return render_template("add_task.html", user=user)
 
         try:
@@ -254,6 +266,7 @@ def add_task():
             teacher_id=user.id,
             task_type=task_type,
             options_json=json.dumps(options, ensure_ascii=False) if options else None,
+            max_score=max_score,
         )
         db.session.add(task)
         db.session.commit()
@@ -288,11 +301,13 @@ def submit_task(task_id):
 
     existing_submission = Submission.query.filter_by(task_id=task_id, student_id=user.id).first()
     if existing_submission:
-        existing_submission.answer_text = answer_text or existing_submission.answer_text
-        existing_submission.answer_link = answer_link or existing_submission.answer_link
-        existing_submission.answer_image_url = answer_image_url or existing_submission.answer_image_url
-        existing_submission.selected_option = selected_option or existing_submission.selected_option
+        existing_submission.answer_text = answer_text
+        existing_submission.answer_link = answer_link
+        existing_submission.answer_image_url = answer_image_url
+        existing_submission.selected_option = selected_option
         existing_submission.status = "submitted"
+        existing_submission.grade = None
+        existing_submission.teacher_comment = None
         existing_submission.submitted_at = datetime.utcnow()
     else:
         submission = Submission(
@@ -352,11 +367,32 @@ def review_submission(submission_id):
         return redirect(url_for("tasks"))
 
     decision = request.form.get("decision", "")
+    grade_raw = request.form.get("grade", "").strip()
+    teacher_comment = request.form.get("teacher_comment", "").strip()
+
     if decision not in {"completed", "submitted"}:
         flash("Некорректное решение проверки.", "error")
         return redirect(url_for("tasks"))
 
+    task = db.session.get(Task, submission.task_id)
+    if not task:
+        flash("Связанное задание не найдено.", "error")
+        return redirect(url_for("tasks"))
+
+    grade = None
+    if grade_raw:
+        try:
+            grade = int(grade_raw)
+        except ValueError:
+            flash("Оценка должна быть целым числом.", "error")
+            return redirect(url_for("tasks"))
+        if grade < 0 or grade > task.max_score:
+            flash(f"Оценка должна быть в диапазоне 0..{task.max_score}.", "error")
+            return redirect(url_for("tasks"))
+
     submission.status = decision
+    submission.grade = grade
+    submission.teacher_comment = teacher_comment or None
     submission.reviewed_at = datetime.utcnow()
 
     completion = Completion.query.filter_by(task_id=submission.task_id, student_id=submission.student_id).first()
