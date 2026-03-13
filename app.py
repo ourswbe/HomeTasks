@@ -232,7 +232,9 @@ def tasks():
     if user.role == "teacher":
         task_ids = [task.id for task in all_tasks]
         if task_ids:
-            submissions = Submission.query.filter(Submission.task_id.in_(task_ids)).order_by(Submission.submitted_at.desc()).all()
+            submissions = Submission.query.filter(
+                Submission.task_id.in_(task_ids)
+            ).order_by(Submission.submitted_at.desc()).all()
             for submission in submissions:
                 task_submissions.setdefault(submission.task_id, []).append(submission)
 
@@ -404,6 +406,7 @@ def review_submission(submission_id):
     decision = request.form.get("decision", "")
     grade_raw = request.form.get("grade", "").strip()
     teacher_comment = request.form.get("teacher_comment", "").strip()
+
     if decision not in {"completed", "submitted"}:
         flash("Некорректное решение проверки.", "error")
         return redirect(url_for("tasks"))
