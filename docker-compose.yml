@@ -1,4 +1,20 @@
 services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: hometasks
+      POSTGRES_USER: hometasks
+      POSTGRES_PASSWORD: hometasks
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hometasks -d hometasks"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   web:
     build: .
     ports:
@@ -6,4 +22,12 @@ services:
     volumes:
       - .:/app
     environment:
-      - FLASK_ENV=development
+      FLASK_ENV: development
+      SECRET_KEY: change-me-in-production
+      DATABASE_URL: postgresql+psycopg2://hometasks:hometasks@db:5432/hometasks
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:

@@ -1,18 +1,58 @@
 import json
+import os
 from datetime import datetime
 from functools import wraps
 
 from flask import Flask, flash, redirect, render_template, request, session, url_for
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import text
 from werkzeug.security import check_password_hash, generate_password_hash
 
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "change-me-in-production"
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///hometasks.db"
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "change-me-in-production")
+database_url = os.getenv("DATABASE_URL", "sqlite:///hometasks.db")
+if database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql+psycopg2://", 1)
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
+
+
+def ensure_sqlite_schema_updates():
+    """Add newly introduced columns for existing SQLite DBs (lightweight migration)."""
+    if not app.config["SQLALCHEMY_DATABASE_URI"].startswith("sqlite"):
+        return
+
+    def column_names(table_name):
+        result = db.session.execute(text(f"PRAGMA table_info({table_name})"))
+        return {row[1] for row in result}
+
+    task_columns = column_names("task")
+    if "task_type" not in task_columns:
+        db.session.execute(text("ALTER TABLE task ADD COLUMN task_type VARCHAR(20) NOT NULL DEFAULT 'text'"))
+    if "options_json" not in task_columns:
+        db.session.execute(text("ALTER TABLE task ADD COLUMN options_json TEXT"))
+    if "max_score" not in task_columns:
+        db.session.execute(text("ALTER TABLE task ADD COLUMN max_score INTEGER NOT NULL DEFAULT 100"))
+
+    submission_columns = column_names("submission")
+    if "grade" not in submission_columns:
+        db.session.execute(text("ALTER TABLE submission ADD COLUMN grade INTEGER"))
+    if "teacher_comment" not in submission_columns:
+        db.session.execute(text("ALTER TABLE submission ADD COLUMN teacher_comment TEXT"))
+
+    db.session.commit()
+
+
+@app.before_request
+def run_schema_updates_once():
+    if app.config.get("_schema_updates_done"):
+        return
+    db.create_all()
+    ensure_sqlite_schema_updates()
+    app.config["_schema_updates_done"] = True
 
 
 class User(db.Model):
@@ -192,12 +232,9 @@ def tasks():
     if user.role == "teacher":
         task_ids = [task.id for task in all_tasks]
         if task_ids:
-            submissions = (
-                Submission.query
-                .filter(Submission.task_id.in_(task_ids))
-                .order_by(Submission.submitted_at.desc())
-                .all()
-            )
+            submissions = Submission.query.filter(
+                Submission.task_id.in_(task_ids)
+            ).order_by(Submission.submitted_at.desc()).all()
             for submission in submissions:
                 task_submissions.setdefault(submission.task_id, []).append(submission)
 
@@ -410,10 +447,12 @@ def review_submission(submission_id):
 @app.cli.command("init-db")
 def init_db_command():
     db.create_all()
+    ensure_sqlite_schema_updates()
     print("Database initialized")
 
 
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
+        ensure_sqlite_schema_updates()
     app.run(host="0.0.0.0", port=5000, debug=True)
