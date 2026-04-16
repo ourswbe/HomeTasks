@@ -6,17 +6,22 @@
     <title>{% block title %}HomeTasks{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
   </head>
+
   <body>
     <header class="topbar">
       <div class="brand">📚 HomeTasks</div>
+
       <nav>
         {% if session.get('user_id') %}
           <a href="{{ url_for('tasks') }}">Задания</a>
+
           {% if user and user.role == 'teacher' %}
             <a href="{{ url_for('add_task') }}">Добавить задание</a>
             <a href="{{ url_for('classroom') }}">Мой класс</a>
           {% endif %}
+
           <a href="{{ url_for('logout') }}">Выйти</a>
+
         {% else %}
           <a href="{{ url_for('login') }}">Вход</a>
           <a href="{{ url_for('reset_password') }}">Сброс пароля</a>
