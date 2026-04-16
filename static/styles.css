@@ -146,6 +146,16 @@ button {
   font-weight: 700;
 }
 
+.status.pending {
+  color: #8a6400;
+  font-weight: 600;
+}
+
+.status.grade {
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
 .flash-wrap {
   margin-bottom: 1rem;
 }
@@ -187,16 +197,6 @@ button {
   cursor: pointer;
   color: #2746c4;
   font-weight: 600;
-}
-
-.status.pending {
-  color: #8a6400;
-  font-weight: 600;
-}
-
-.status.grade {
-  color: #1d4ed8;
-  font-weight: 700;
 }
 
 .teacher-comment {
