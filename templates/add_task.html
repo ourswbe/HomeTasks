@@ -1,11 +1,13 @@
 {% extends 'base.html' %}
 {% block title %}Добавить задание | HomeTasks{% endblock %}
+
 {% block content %}
 
 <section class="auth-card wide ultra-wide">
   <h1>Новое задание</h1>
 
   <form method="post" class="form-grid">
+
     <label>Предмет
       <input type="text" name="subject" required />
     </label>
@@ -26,7 +28,9 @@
     </label>
 
     <div id="test_builder" class="test-builder">
-      <label>Количество вопросов в тесте
+
+      <label>
+        Количество вопросов в тесте
         <input type="number" name="question_count" id="question_count" min="1" max="50" value="1" />
       </label>
 
@@ -35,6 +39,7 @@
       </button>
 
       <div id="questions_container" class="questions-container"></div>
+
     </div>
 
     <label>Дедлайн
@@ -46,6 +51,7 @@
     </label>
 
     <button type="submit">Сохранить</button>
+
   </form>
 </section>
 
@@ -63,26 +69,33 @@
     wrapper.innerHTML = `
       <h3>Вопрос ${index}</h3>
 
-      <label>Текст вопроса
+      <label>
+        Текст вопроса
         <input type="text" name="question_${index}_text" required />
       </label>
 
       <div class="options-grid">
-        <label>Вариант 1
+
+        <label>
+          Вариант 1
           <input type="text" name="question_${index}_option_1" required />
         </label>
 
-        <label>Вариант 2
+        <label>
+          Вариант 2
           <input type="text" name="question_${index}_option_2" required />
         </label>
 
-        <label>Вариант 3
+        <label>
+          Вариант 3
           <input type="text" name="question_${index}_option_3" />
         </label>
 
-        <label>Вариант 4
+        <label>
+          Вариант 4
           <input type="text" name="question_${index}_option_4" />
         </label>
+
       </div>
     `;
 
@@ -102,6 +115,7 @@
 
   function syncBuilderVisibility() {
     const enabled = taskType.value === 'multiple_choice';
+
     testBuilder.style.display = enabled ? 'grid' : 'none';
     questionCountInput.required = enabled;
 

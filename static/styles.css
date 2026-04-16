@@ -146,6 +146,7 @@ button {
   font-weight: 700;
 }
 
+/* ===== status fixes (merged once) ===== */
 .status.pending {
   color: #8a6400;
   font-weight: 600;

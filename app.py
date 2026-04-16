@@ -8,7 +8,6 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 from werkzeug.security import check_password_hash, generate_password_hash
 
-
 CLASS_OPTIONS = [
     "5A","5B","6A","6B","7A","7B",
     "8A","8B","9A","9B","10A","10B","11A","11B",
@@ -148,6 +147,7 @@ def login_required(role=None):
                 return redirect(url_for("tasks"))
 
             return func(*args, **kwargs)
+
         return wrapper
     return decorator
 
