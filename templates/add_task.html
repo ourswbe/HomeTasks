@@ -1,18 +1,23 @@
 {% extends 'base.html' %}
 {% block title %}Добавить задание | HomeTasks{% endblock %}
 {% block content %}
+
 <section class="auth-card wide ultra-wide">
   <h1>Новое задание</h1>
+
   <form method="post" class="form-grid">
     <label>Предмет
       <input type="text" name="subject" required />
     </label>
+
     <label>Название
       <input type="text" name="title" required />
     </label>
+
     <label>Описание
       <textarea name="description" rows="4" required></textarea>
     </label>
+
     <label>Тип задания
       <select name="task_type" id="task_type" required>
         <option value="text">Задание (текст / ссылка / фото)</option>
@@ -24,16 +29,22 @@
       <label>Количество вопросов в тесте
         <input type="number" name="question_count" id="question_count" min="1" max="50" value="1" />
       </label>
-      <button type="button" id="build_questions" class="ghost-btn">Сгенерировать вопросы</button>
+
+      <button type="button" id="build_questions" class="ghost-btn">
+        Сгенерировать вопросы
+      </button>
+
       <div id="questions_container" class="questions-container"></div>
     </div>
 
     <label>Дедлайн
       <input type="datetime-local" name="deadline" required />
     </label>
+
     <label>Максимальный балл
       <input type="number" name="max_score" min="1" value="100" required />
     </label>
+
     <button type="submit">Сохранить</button>
   </form>
 </section>
@@ -48,34 +59,43 @@
   function createQuestionBlock(index) {
     const wrapper = document.createElement('div');
     wrapper.className = 'question-card';
+
     wrapper.innerHTML = `
       <h3>Вопрос ${index}</h3>
+
       <label>Текст вопроса
         <input type="text" name="question_${index}_text" required />
       </label>
+
       <div class="options-grid">
         <label>Вариант 1
           <input type="text" name="question_${index}_option_1" required />
         </label>
+
         <label>Вариант 2
           <input type="text" name="question_${index}_option_2" required />
         </label>
+
         <label>Вариант 3
           <input type="text" name="question_${index}_option_3" />
         </label>
+
         <label>Вариант 4
           <input type="text" name="question_${index}_option_4" />
         </label>
       </div>
     `;
+
     return wrapper;
   }
 
   function buildQuestionFields() {
     const count = Math.max(1, Math.min(50, Number(questionCountInput.value || 1)));
     questionCountInput.value = count;
+
     questionsContainer.innerHTML = '';
-    for (let i = 1; i <= count; i += 1) {
+
+    for (let i = 1; i <= count; i++) {
       questionsContainer.appendChild(createQuestionBlock(i));
     }
   }
@@ -84,6 +104,7 @@
     const enabled = taskType.value === 'multiple_choice';
     testBuilder.style.display = enabled ? 'grid' : 'none';
     questionCountInput.required = enabled;
+
     if (enabled && questionsContainer.children.length === 0) {
       buildQuestionFields();
     }
@@ -94,4 +115,5 @@
 
   syncBuilderVisibility();
 </script>
+
 {% endblock %}
