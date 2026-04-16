@@ -6,21 +6,25 @@
     <title>{% block title %}HomeTasks{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
   </head>
+
   <body>
     <header class="topbar">
       <div class="brand">📚 HomeTasks</div>
+
       <nav>
         {% if session.get('user_id') %}
           <a href="{{ url_for('tasks') }}">Задания</a>
+
           {% if user and user.role == 'teacher' %}
-            {% if has_endpoint('add_task') %}<a href="{{ url_for('add_task') }}">Добавить задание</a>{% endif %}
-            {% if has_endpoint('classroom') %}<a href="{{ url_for('classroom') }}">Мой класс</a>{% endif %}
+            <a href="{{ url_for('add_task') }}">Добавить задание</a>
+            <a href="{{ url_for('classroom') }}">Мой класс</a>
           {% endif %}
-          {% if has_endpoint('logout') %}<a href="{{ url_for('logout') }}">Выйти</a>{% endif %}
+
+          <a href="{{ url_for('logout') }}">Выйти</a>
         {% else %}
-          {% if has_endpoint('login') %}<a href="{{ url_for('login') }}">Вход</a>{% endif %}
-          {% if has_endpoint('reset_password') %}<a href="{{ url_for('reset_password') }}">Сброс пароля</a>{% endif %}
-          {% if has_endpoint('register') %}<a href="{{ url_for('register') }}">Регистрация</a>{% endif %}
+          <a href="{{ url_for('login') }}">Вход</a>
+          <a href="{{ url_for('reset_password') }}">Сброс пароля</a>
+          <a href="{{ url_for('register') }}">Регистрация</a>
         {% endif %}
       </nav>
     </header>

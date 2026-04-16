@@ -1,18 +1,23 @@
 {% extends 'base.html' %}
 {% block title %}Регистрация | HomeTasks{% endblock %}
+
 {% block content %}
 <section class="auth-card">
   <h1>Регистрация</h1>
+
   <form method="post" class="form-grid">
     <label>Имя
       <input type="text" name="name" required />
     </label>
+
     <label>Почта
       <input type="email" name="email" required />
     </label>
+
     <label>Пароль
       <input type="password" name="password" required />
     </label>
+
     <label>Роль
       <select name="role" required>
         <option value="">Выберите роль</option>
@@ -20,6 +25,7 @@
         <option value="student">Ученик</option>
       </select>
     </label>
+
     <label>Класс
       <select name="class_name" required>
         <option value="">Выберите класс</option>
@@ -28,6 +34,7 @@
         {% endfor %}
       </select>
     </label>
+
     <button type="submit">Создать аккаунт</button>
   </form>
 </section>
