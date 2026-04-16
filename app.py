@@ -27,8 +27,6 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 
-# -------------------- DB MIGRATION --------------------
-
 def ensure_sqlite_schema_updates():
     if not app.config["SQLALCHEMY_DATABASE_URI"].startswith("sqlite"):
         return
@@ -73,8 +71,6 @@ def run_schema_updates_once():
     app.config["_schema_done"] = True
 
 
-# -------------------- MODELS --------------------
-
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -91,6 +87,7 @@ class Task(db.Model):
     description = db.Column(db.Text, nullable=False)
     deadline = db.Column(db.DateTime, nullable=False)
     teacher_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+
     task_type = db.Column(db.String(20), default="text")
     options_json = db.Column(db.Text)
     question_count = db.Column(db.Integer, default=0)
@@ -115,7 +112,6 @@ class Submission(db.Model):
     answer_text = db.Column(db.Text)
     answer_link = db.Column(db.String(500))
     answer_image_url = db.Column(db.String(500))
-
     selected_answers_json = db.Column(db.Text)
 
     status = db.Column(db.String(20), default="submitted")
@@ -134,8 +130,6 @@ class Completion(db.Model):
     student_id = db.Column(db.Integer)
     completed_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-
-# -------------------- AUTH --------------------
 
 def login_required(role=None):
     def decorator(func):
@@ -158,7 +152,14 @@ def login_required(role=None):
     return decorator
 
 
-# -------------------- ROUTES --------------------
+def get_user_name(user_id):
+    user = db.session.get(User, user_id)
+    return user.name if user else "Неизвестный"
+
+
+def class_options():
+    return CLASS_OPTIONS
+
 
 @app.route("/")
 def index():
@@ -191,7 +192,6 @@ def login():
         if user and check_password_hash(user.password_hash, request.form["password"]):
             session["user_id"] = user.id
             return redirect(url_for("tasks"))
-
     return render_template("login.html")
 
 
@@ -225,8 +225,6 @@ def add_task():
 
     return render_template("add_task.html")
 
-
-# -------------------- RUN --------------------
 
 if __name__ == "__main__":
     with app.app_context():

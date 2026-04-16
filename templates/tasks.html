@@ -32,174 +32,174 @@
 
 <section class="cards">
 
-{% for task in tasks %}
+  {% for task in tasks %}
 
-<article class="task-card {% if task.deadline < now %}overdue{% endif %}">
+  <article class="task-card {% if task.deadline < now %}overdue{% endif %}">
 
-  <div class="task-header">
-    <h3>{{ task.title }}</h3>
-    <span class="badge">{{ task.subject }}</span>
-  </div>
+    <div class="task-header">
+      <h3>{{ task.title }}</h3>
+      <span class="badge">{{ task.subject }}</span>
+    </div>
 
-  <p>{{ task.description }}</p>
+    <p>{{ task.description }}</p>
 
-  <p><strong>Тип:</strong>
-    {{ 'Тест' if task.task_type == 'multiple_choice' else 'Задание' }}
-  </p>
+    <p><strong>Тип:</strong>
+      {{ 'Тест' if task.task_type == 'multiple_choice' else 'Задание' }}
+    </p>
 
-  <p><strong>Макс. балл:</strong> {{ task.max_score }}</p>
+    <p><strong>Макс. балл:</strong> {{ task.max_score }}</p>
 
-  <p><strong>Дедлайн:</strong> {{ task.deadline.strftime('%d.%m.%Y %H:%M') }}</p>
+    <p><strong>Дедлайн:</strong> {{ task.deadline.strftime('%d.%m.%Y %H:%M') }}</p>
 
-  {% if task.deadline < now %}
-    <p class="status late">⛔ Дедлайн истёк</p>
-  {% endif %}
-
-  <!-- ===================== УЧЕНИК ===================== -->
-  {% if user.role == 'student' %}
-
-    {% set student_submission = student_submissions.get(task.id) %}
-
-    {% if task.id in completed_task_ids %}
-      <p class="status success">✅ Выполнено</p>
-    {% elif student_submission %}
-      <p class="status pending">🕒 На проверке</p>
+    {% if task.deadline < now %}
+      <p class="status late">⛔ Дедлайн истёк</p>
     {% endif %}
 
-    {% if student_submission and student_submission.grade is not none %}
-      <p class="status grade">
-        🏅 {{ student_submission.grade }} / {{ task.max_score }}
-      </p>
-    {% endif %}
+    {% if user.role == 'student' %}
 
-    {% if student_submission and student_submission.teacher_comment %}
-      <p class="teacher-comment">
-        <strong>Комментарий:</strong> {{ student_submission.teacher_comment }}
-      </p>
-    {% endif %}
+      {% set student_submission = student_submissions.get(task.id) %}
 
-    {% if task.deadline >= now %}
-    <details class="submission-block">
-      <summary>Отправить решение</summary>
+      {% if task.id in completed_task_ids %}
+        <p class="status success">✅ Выполнено</p>
+      {% elif student_submission %}
+        <p class="status pending">🕒 На проверке</p>
+      {% endif %}
 
-      <form method="post"
-            action="{{ url_for('submit_task', task_id=task.id) }}"
-            class="form-grid">
+      {% if student_submission and student_submission.grade is not none %}
+        <p class="status grade">
+          🏅 {{ student_submission.grade }} / {{ task.max_score }}
+        </p>
+      {% endif %}
 
-        {% if task.task_type == 'multiple_choice' %}
+      {% if student_submission and student_submission.teacher_comment %}
+        <p class="teacher-comment">
+          <strong>Комментарий:</strong> {{ student_submission.teacher_comment }}
+        </p>
+      {% endif %}
 
-          {% set answers = student_submission.answers_map if student_submission else {} %}
+      {% if task.deadline >= now %}
+      <details class="submission-block">
+        <summary>Отправить решение</summary>
 
-          {% for q in task.test_questions %}
-            {% set i = loop.index %}
+        <form method="post"
+              action="{{ url_for('submit_task', task_id=task.id) }}"
+              class="form-grid">
+
+          {% if task.task_type == 'multiple_choice' %}
+
+            {% set answers = student_submission.answers_map if student_submission else {} %}
+
+            {% for q in task.test_questions %}
+              {% set i = loop.index %}
+              <label>
+                Вопрос {{ i }}: {{ q.question }}
+
+                <select name="q_{{ i }}" required>
+                  <option value="">-- выбрать --</option>
+
+                  {% for opt in q.options %}
+                    <option value="{{ opt }}"
+                      {% if answers.get(i|string) == opt %}selected{% endif %}>
+                      {{ opt }}
+                    </option>
+                  {% endfor %}
+
+                </select>
+              </label>
+            {% endfor %}
+
+          {% else %}
+
             <label>
-              Вопрос {{ i }}: {{ q.question }}
-
-              <select name="q_{{ i }}" required>
-                <option value="">-- выбрать --</option>
-
-                {% for opt in q.options %}
-                  <option value="{{ opt }}"
-                    {% if answers.get(i|string) == opt %}selected{% endif %}>
-                    {{ opt }}
-                  </option>
-                {% endfor %}
-
-              </select>
+              Текст ответа
+              <textarea name="answer_text">{{ student_submission.answer_text if student_submission else '' }}</textarea>
             </label>
+
+            <label>
+              Ссылка
+              <input type="url" name="answer_link"
+                     value="{{ student_submission.answer_link if student_submission else '' }}">
+            </label>
+
+            <label>
+              Фото
+              <input type="url" name="answer_image_url"
+                     value="{{ student_submission.answer_image_url if student_submission else '' }}">
+            </label>
+
+          {% endif %}
+
+          <button type="submit">Отправить</button>
+        </form>
+      </details>
+      {% endif %}
+
+    {% endif %}
+
+    {% if user.role == 'teacher' %}
+
+      {% set submissions = task_submissions.get(task.id, []) %}
+
+      <div class="teacher-box">
+        <strong>Ответы учеников:</strong>
+
+        {% if submissions %}
+
+          {% for sub in submissions %}
+
+          <div class="submission-item">
+
+            <p>
+              <strong>{{ get_user_name(sub.student_id) }}</strong>
+              — {{ 'Проверено' if sub.status == 'completed' else 'На проверке' }}
+            </p>
+
+            {% if task.task_type == 'multiple_choice' and sub.answers_map %}
+              {% for q in task.test_questions %}
+                <p>
+                  В{{ loop.index }}: {{ sub.answers_map.get(loop.index|string, '-') }}
+                </p>
+              {% endfor %}
+            {% endif %}
+
+            {% if sub.answer_text %}<p>{{ sub.answer_text }}</p>{% endif %}
+
+            {% if sub.answer_link %}
+              <a href="{{ sub.answer_link }}" target="_blank">Файл</a>
+            {% endif %}
+
+            {% if sub.grade is not none %}
+              <p>Оценка: {{ sub.grade }}</p>
+            {% endif %}
+
+            <form method="post"
+                  action="{{ url_for('review_submission', submission_id=sub.id) }}"
+                  class="review-form">
+
+              <input type="number" name="grade" max="{{ task.max_score }}">
+              <textarea name="teacher_comment"></textarea>
+
+              <button name="decision" value="completed">✔</button>
+              <button class="ghost-btn" name="decision" value="submitted">↩</button>
+
+            </form>
+
+          </div>
+
           {% endfor %}
 
         {% else %}
-
-          <label>
-            Текст ответа
-            <textarea name="answer_text">{{ student_submission.answer_text if student_submission else '' }}</textarea>
-          </label>
-
-          <label>
-            Ссылка
-            <input type="url" name="answer_link"
-                   value="{{ student_submission.answer_link if student_submission else '' }}">
-          </label>
-
-          <label>
-            Фото
-            <input type="url" name="answer_image_url"
-                   value="{{ student_submission.answer_image_url if student_submission else '' }}">
-          </label>
-
+          <p>Нет ответов</p>
         {% endif %}
+      </div>
 
-        <button type="submit">Отправить</button>
-      </form>
-    </details>
     {% endif %}
 
-  {% endif %}
+  </article>
 
-  <!-- ===================== УЧИТЕЛЬ ===================== -->
-  {% if user.role == 'teacher' %}
-
-    {% set submissions = task_submissions.get(task.id, []) %}
-
-    <div class="teacher-box">
-      <strong>Ответы учеников:</strong>
-
-      {% if submissions %}
-
-        {% for sub in submissions %}
-
-        <div class="submission-item">
-
-          <p>
-            <strong>{{ get_user_name(sub.student_id) }}</strong>
-            — {{ 'Проверено' if sub.status == 'completed' else 'На проверке' }}
-          </p>
-
-          {% if task.task_type == 'multiple_choice' and sub.answers_map %}
-            {% for q in task.test_questions %}
-              <p>
-                В{{ loop.index }}: {{ sub.answers_map.get(loop.index|string, '-') }}
-              </p>
-            {% endfor %}
-          {% endif %}
-
-          {% if sub.answer_text %}<p>{{ sub.answer_text }}</p>{% endif %}
-
-          {% if sub.answer_link %}
-            <a href="{{ sub.answer_link }}" target="_blank">Файл</a>
-          {% endif %}
-
-          {% if sub.grade is not none %}
-            <p>Оценка: {{ sub.grade }}</p>
-          {% endif %}
-
-          <form method="post"
-                action="{{ url_for('review_submission', submission_id=sub.id) }}"
-                class="review-form">
-
-            <input type="number" name="grade" max="{{ task.max_score }}">
-            <textarea name="teacher_comment"></textarea>
-
-            <button name="decision" value="completed">✔</button>
-            <button class="ghost-btn" name="decision" value="submitted">↩</button>
-
-          </form>
-
-        </div>
-
-        {% endfor %}
-
-      {% else %}
-        <p>Нет ответов</p>
-      {% endif %}
-    </div>
-
-  {% endif %}
-
-</article>
-
-{% endfor %}
+  {% else %}
+    <p>Заданий нет</p>
+  {% endfor %}
 
 </section>
 

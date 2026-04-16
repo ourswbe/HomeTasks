@@ -38,7 +38,8 @@
 ## Технологии
 
 - Python 3.11
-- Flask + Flask-SQLAlchemy
+- Flask
+- Flask-SQLAlchemy
 - SQLite или PostgreSQL
 - Docker / Docker Compose
 
