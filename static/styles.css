@@ -289,4 +289,19 @@ button {
   .review-form textarea {
     grid-column: auto;
   }
+
+  .students-list {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .student-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #dbe2fb;
+    border-radius: 10px;
+    padding: 0.7rem;
+    background: #f9fbff;
+  }
 }

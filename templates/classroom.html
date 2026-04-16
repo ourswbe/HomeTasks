@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Мой класс | HomeTasks{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>Класс {{ user.class_name }}</h1>
+  <p>Список учеников, которые зарегистрировались в этом классе.</p>
+</section>
+
+<section class="auth-card wide">
+  {% if students %}
+    <div class="students-list">
+      {% for student in students %}
+        <article class="student-row">
+          <strong>{{ student.name }}</strong>
+          <span>{{ student.email }}</span>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>Пока в этом классе нет зарегистрированных учеников.</p>
+  {% endif %}
+</section>
+{% endblock %}

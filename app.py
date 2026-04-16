@@ -16,8 +16,8 @@ CLASS_OPTIONS = [
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "change-me-in-production")
-database_url = os.getenv("DATABASE_URL", "sqlite:///hometasks.db")
 
+database_url = os.getenv("DATABASE_URL", "sqlite:///hometasks.db")
 if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql+psycopg2://", 1)
 
@@ -27,34 +27,38 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 
+# -------------------- DB MIGRATION --------------------
+
 def ensure_sqlite_schema_updates():
     if not app.config["SQLALCHEMY_DATABASE_URI"].startswith("sqlite"):
         return
 
-    def column_names(table_name):
-        result = db.session.execute(text(f"PRAGMA table_info({table_name})"))
+    def column_names(table):
+        result = db.session.execute(text(f"PRAGMA table_info({table})"))
         return {row[1] for row in result}
 
-    user_columns = column_names("user")
-    if "class_name" not in user_columns:
-        db.session.execute(text("ALTER TABLE user ADD COLUMN class_name VARCHAR(50) NOT NULL DEFAULT 'Не указан'"))
+    user_cols = column_names("user")
+    if "class_name" not in user_cols:
+        db.session.execute(text(
+            "ALTER TABLE user ADD COLUMN class_name VARCHAR(50) NOT NULL DEFAULT 'Не указан'"
+        ))
 
-    task_columns = column_names("task")
-    if "task_type" not in task_columns:
-        db.session.execute(text("ALTER TABLE task ADD COLUMN task_type VARCHAR(20) NOT NULL DEFAULT 'text'"))
-    if "options_json" not in task_columns:
+    task_cols = column_names("task")
+    if "task_type" not in task_cols:
+        db.session.execute(text("ALTER TABLE task ADD COLUMN task_type VARCHAR(20) DEFAULT 'text'"))
+    if "options_json" not in task_cols:
         db.session.execute(text("ALTER TABLE task ADD COLUMN options_json TEXT"))
-    if "max_score" not in task_columns:
-        db.session.execute(text("ALTER TABLE task ADD COLUMN max_score INTEGER NOT NULL DEFAULT 100"))
-    if "question_count" not in task_columns:
-        db.session.execute(text("ALTER TABLE task ADD COLUMN question_count INTEGER NOT NULL DEFAULT 0"))
+    if "max_score" not in task_cols:
+        db.session.execute(text("ALTER TABLE task ADD COLUMN max_score INTEGER DEFAULT 100"))
+    if "question_count" not in task_cols:
+        db.session.execute(text("ALTER TABLE task ADD COLUMN question_count INTEGER DEFAULT 0"))
 
-    submission_columns = column_names("submission")
-    if "grade" not in submission_columns:
+    sub_cols = column_names("submission")
+    if "grade" not in sub_cols:
         db.session.execute(text("ALTER TABLE submission ADD COLUMN grade INTEGER"))
-    if "teacher_comment" not in submission_columns:
+    if "teacher_comment" not in sub_cols:
         db.session.execute(text("ALTER TABLE submission ADD COLUMN teacher_comment TEXT"))
-    if "selected_answers_json" not in submission_columns:
+    if "selected_answers_json" not in sub_cols:
         db.session.execute(text("ALTER TABLE submission ADD COLUMN selected_answers_json TEXT"))
 
     db.session.commit()
@@ -62,12 +66,14 @@ def ensure_sqlite_schema_updates():
 
 @app.before_request
 def run_schema_updates_once():
-    if app.config.get("_schema_updates_done"):
+    if app.config.get("_schema_done"):
         return
     db.create_all()
     ensure_sqlite_schema_updates()
-    app.config["_schema_updates_done"] = True
+    app.config["_schema_done"] = True
 
+
+# -------------------- MODELS --------------------
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -85,10 +91,10 @@ class Task(db.Model):
     description = db.Column(db.Text, nullable=False)
     deadline = db.Column(db.DateTime, nullable=False)
     teacher_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
-    task_type = db.Column(db.String(20), nullable=False, default="text")
-    options_json = db.Column(db.Text, nullable=True)
-    question_count = db.Column(db.Integer, nullable=False, default=0)
-    max_score = db.Column(db.Integer, nullable=False, default=100)
+    task_type = db.Column(db.String(20), default="text")
+    options_json = db.Column(db.Text)
+    question_count = db.Column(db.Integer, default=0)
+    max_score = db.Column(db.Integer, default=100)
 
     @property
     def test_questions(self):
@@ -105,13 +111,17 @@ class Submission(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     task_id = db.Column(db.Integer, db.ForeignKey("task.id"), nullable=False)
     student_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+
     answer_text = db.Column(db.Text)
     answer_link = db.Column(db.String(500))
     answer_image_url = db.Column(db.String(500))
+
     selected_answers_json = db.Column(db.Text)
+
     status = db.Column(db.String(20), default="submitted")
     grade = db.Column(db.Integer)
     teacher_comment = db.Column(db.Text)
+
     submitted_at = db.Column(db.DateTime, default=datetime.utcnow)
     reviewed_at = db.Column(db.DateTime)
 
@@ -125,6 +135,8 @@ class Completion(db.Model):
     completed_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
+# -------------------- AUTH --------------------
+
 def login_required(role=None):
     def decorator(func):
         @wraps(func)
@@ -134,6 +146,10 @@ def login_required(role=None):
                 return redirect(url_for("login"))
 
             user = db.session.get(User, user_id)
+            if not user:
+                session.clear()
+                return redirect(url_for("login"))
+
             if role and user.role != role:
                 return redirect(url_for("tasks"))
 
@@ -142,30 +158,24 @@ def login_required(role=None):
     return decorator
 
 
+# -------------------- ROUTES --------------------
+
 @app.route("/")
 def index():
+    if session.get("user_id"):
+        return redirect(url_for("tasks"))
     return redirect(url_for("login"))
 
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        name = request.form.get("name")
-        email = request.form.get("email")
-        password = request.form.get("password")
-        role = request.form.get("role")
-        class_name = request.form.get("class_name")
-
-        if not all([name, email, password]):
-            flash("Заполните все поля")
-            return render_template("register.html", class_options=CLASS_OPTIONS)
-
         user = User(
-            name=name,
-            email=email,
-            password_hash=generate_password_hash(password),
-            role=role,
-            class_name=class_name
+            name=request.form["name"],
+            email=request.form["email"],
+            password_hash=generate_password_hash(request.form["password"]),
+            role=request.form["role"],
+            class_name=request.form.get("class_name", "Не указан")
         )
         db.session.add(user)
         db.session.commit()
@@ -177,18 +187,24 @@ def register():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        user = User.query.filter_by(email=request.form.get("email")).first()
-        if user and check_password_hash(user.password_hash, request.form.get("password")):
+        user = User.query.filter_by(email=request.form["email"]).first()
+        if user and check_password_hash(user.password_hash, request.form["password"]):
             session["user_id"] = user.id
             return redirect(url_for("tasks"))
 
     return render_template("login.html")
 
 
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect(url_for("login"))
+
+
 @app.route("/tasks")
 @login_required()
 def tasks():
-    tasks = Task.query.all()
+    tasks = Task.query.order_by(Task.deadline.asc()).all()
     return render_template("tasks.html", tasks=tasks)
 
 
@@ -197,11 +213,11 @@ def tasks():
 def add_task():
     if request.method == "POST":
         task = Task(
-            subject=request.form.get("subject"),
-            title=request.form.get("title"),
-            description=request.form.get("description"),
-            deadline=datetime.strptime(request.form.get("deadline"), "%Y-%m-%dT%H:%M"),
-            teacher_id=session["user_id"],
+            subject=request.form["subject"],
+            title=request.form["title"],
+            description=request.form["description"],
+            deadline=datetime.strptime(request.form["deadline"], "%Y-%m-%dT%H:%M"),
+            teacher_id=session["user_id"]
         )
         db.session.add(task)
         db.session.commit()
@@ -210,8 +226,11 @@ def add_task():
     return render_template("add_task.html")
 
 
+# -------------------- RUN --------------------
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
         ensure_sqlite_schema_updates()
-    app.run(debug=True)
+
+    app.run(host="0.0.0.0", port=5000, debug=True)

@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block title %}Задания | HomeTasks{% endblock %}
+
 {% block content %}
 
 <section class="hero">
@@ -12,8 +13,11 @@
 
 <section class="filter-panel">
   <form method="get" class="filter-form">
-    <input type="text" name="subject" placeholder="Фильтр по предмету"
-           value="{{ subject_filter }}" list="subjects" />
+    <input type="text"
+           name="subject"
+           placeholder="Фильтр по предмету"
+           value="{{ subject_filter }}"
+           list="subjects" />
 
     <datalist id="subjects">
       {% for subject in subjects %}
@@ -28,31 +32,31 @@
 
 <section class="cards">
 
-  {% for task in tasks %}
+{% for task in tasks %}
 
-  <article class="task-card {% if task.deadline < now %}overdue{% endif %}">
+<article class="task-card {% if task.deadline < now %}overdue{% endif %}">
 
-    <div class="task-header">
-      <h3>{{ task.title }}</h3>
-      <span class="badge">{{ task.subject }}</span>
-    </div>
+  <div class="task-header">
+    <h3>{{ task.title }}</h3>
+    <span class="badge">{{ task.subject }}</span>
+  </div>
 
-    <p>{{ task.description }}</p>
+  <p>{{ task.description }}</p>
 
-    <p><strong>Тип:</strong>
-      {{ 'Тест' if task.task_type == 'multiple_choice' else 'Задание' }}
-    </p>
+  <p><strong>Тип:</strong>
+    {{ 'Тест' if task.task_type == 'multiple_choice' else 'Задание' }}
+  </p>
 
-    <p><strong>Макс. балл:</strong> {{ task.max_score }}</p>
+  <p><strong>Макс. балл:</strong> {{ task.max_score }}</p>
 
-    <p><strong>Дедлайн:</strong> {{ task.deadline.strftime('%d.%m.%Y %H:%M') }}</p>
+  <p><strong>Дедлайн:</strong> {{ task.deadline.strftime('%d.%m.%Y %H:%M') }}</p>
 
-    {% if task.deadline < now %}
-      <p class="status late">⛔ Дедлайн истёк</p>
-    {% endif %}
+  {% if task.deadline < now %}
+    <p class="status late">⛔ Дедлайн истёк</p>
+  {% endif %}
 
-    <!-- УЧЕНИК -->
-    {% if user.role == 'student' %}
+  <!-- ===================== УЧЕНИК ===================== -->
+  {% if user.role == 'student' %}
 
     {% set student_submission = student_submissions.get(task.id) %}
 
@@ -63,7 +67,9 @@
     {% endif %}
 
     {% if student_submission and student_submission.grade is not none %}
-      <p class="status grade">🏅 {{ student_submission.grade }} / {{ task.max_score }}</p>
+      <p class="status grade">
+        🏅 {{ student_submission.grade }} / {{ task.max_score }}
+      </p>
     {% endif %}
 
     {% if student_submission and student_submission.teacher_comment %}
@@ -85,60 +91,58 @@
           {% set answers = student_submission.answers_map if student_submission else {} %}
 
           {% for q in task.test_questions %}
-          {% set i = loop.index %}
-          <label>
-            Вопрос {{ i }}: {{ q.question }}
+            {% set i = loop.index %}
+            <label>
+              Вопрос {{ i }}: {{ q.question }}
 
-            <select name="q_{{ i }}" required>
-              <option value="">-- выбрать --</option>
+              <select name="q_{{ i }}" required>
+                <option value="">-- выбрать --</option>
 
-              {% for opt in q.options %}
-              <option value="{{ opt }}"
-                {% if answers.get(i|string) == opt %}selected{% endif %}>
-                {{ opt }}
-              </option>
-              {% endfor %}
+                {% for opt in q.options %}
+                  <option value="{{ opt }}"
+                    {% if answers.get(i|string) == opt %}selected{% endif %}>
+                    {{ opt }}
+                  </option>
+                {% endfor %}
 
-            </select>
-          </label>
+              </select>
+            </label>
           {% endfor %}
 
         {% else %}
 
-        <label>
-          Текст
-          <textarea name="answer_text">{{ student_submission.answer_text if student_submission else '' }}</textarea>
-        </label>
+          <label>
+            Текст ответа
+            <textarea name="answer_text">{{ student_submission.answer_text if student_submission else '' }}</textarea>
+          </label>
 
-        <label>
-          Ссылка
-          <input type="url" name="answer_link"
-                 value="{{ student_submission.answer_link if student_submission else '' }}">
-        </label>
+          <label>
+            Ссылка
+            <input type="url" name="answer_link"
+                   value="{{ student_submission.answer_link if student_submission else '' }}">
+          </label>
 
-        <label>
-          Фото
-          <input type="url" name="answer_image_url"
-                 value="{{ student_submission.answer_image_url if student_submission else '' }}">
-        </label>
+          <label>
+            Фото
+            <input type="url" name="answer_image_url"
+                   value="{{ student_submission.answer_image_url if student_submission else '' }}">
+          </label>
 
         {% endif %}
 
         <button type="submit">Отправить</button>
-
       </form>
     </details>
     {% endif %}
 
-    {% endif %}
+  {% endif %}
 
-    <!-- УЧИТЕЛЬ -->
-    {% if user.role == 'teacher' %}
+  <!-- ===================== УЧИТЕЛЬ ===================== -->
+  {% if user.role == 'teacher' %}
 
     {% set submissions = task_submissions.get(task.id, []) %}
 
     <div class="teacher-box">
-
       <strong>Ответы учеников:</strong>
 
       {% if submissions %}
@@ -147,13 +151,16 @@
 
         <div class="submission-item">
 
-          <p><strong>{{ get_user_name(sub.student_id) }}</strong>
+          <p>
+            <strong>{{ get_user_name(sub.student_id) }}</strong>
             — {{ 'Проверено' if sub.status == 'completed' else 'На проверке' }}
           </p>
 
           {% if task.task_type == 'multiple_choice' and sub.answers_map %}
             {% for q in task.test_questions %}
-              <p>В{{ loop.index }}: {{ sub.answers_map.get(loop.index|string, '-') }}</p>
+              <p>
+                В{{ loop.index }}: {{ sub.answers_map.get(loop.index|string, '-') }}
+              </p>
             {% endfor %}
           {% endif %}
 
@@ -186,16 +193,13 @@
       {% else %}
         <p>Нет ответов</p>
       {% endif %}
-
     </div>
 
-    {% endif %}
+  {% endif %}
 
-  </article>
+</article>
 
-  {% else %}
-    <p>Заданий нет</p>
-  {% endfor %}
+{% endfor %}
 
 </section>
 

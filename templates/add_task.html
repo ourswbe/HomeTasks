@@ -59,6 +59,7 @@
   function createQuestionBlock(index) {
     const wrapper = document.createElement('div');
     wrapper.className = 'question-card';
+
     wrapper.innerHTML = `
       <h3>Вопрос ${index}</h3>
 
@@ -84,6 +85,7 @@
         </label>
       </div>
     `;
+
     return wrapper;
   }
 
