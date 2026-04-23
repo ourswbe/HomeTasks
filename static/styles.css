@@ -146,6 +146,16 @@ button {
   font-weight: 700;
 }
 
+.status.pending {
+  color: #8a6400;
+  font-weight: 600;
+}
+
+.status.grade {
+  color: #1d4ed8;
+  font-weight: 700;
+}
+
 .flash-wrap {
   margin-bottom: 1rem;
 }
@@ -187,16 +197,6 @@ button {
   cursor: pointer;
   color: #2746c4;
   font-weight: 600;
-}
-
-.status.pending {
-  color: #8a6400;
-  font-weight: 600;
-}
-
-.status.grade {
-  color: #1d4ed8;
-  font-weight: 700;
 }
 
 .teacher-comment {
@@ -278,19 +278,6 @@ button {
   margin-bottom: 0.6rem;
 }
 
-@media (max-width: 760px) {
-  .filter-form,
-  .options-grid,
-  .review-form {
-    grid-template-columns: 1fr;
-  }
-
-  .review-form input,
-  .review-form textarea {
-    grid-column: auto;
-  }
-}
-
 .students-list {
   display: grid;
   gap: 0.6rem;
@@ -304,4 +291,32 @@ button {
   border-radius: 10px;
   padding: 0.7rem;
   background: #f9fbff;
+}
+
+@media (max-width: 760px) {
+  .filter-form,
+  .options-grid,
+  .review-form {
+    grid-template-columns: 1fr;
+  }
+
+  .review-form input,
+  .review-form textarea {
+    grid-column: auto;
+  }
+
+  .students-list {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .student-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #dbe2fb;
+    border-radius: 10px;
+    padding: 0.7rem;
+    background: #f9fbff;
+  }
 }
