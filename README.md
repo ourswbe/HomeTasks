@@ -77,6 +77,10 @@ docker compose up --build
    ```bash
    rg "^(<<<<<<<|=======|>>>>>>>)" .
    ```
+6. Можно запустить встроенный помощник:
+   ```bash
+   ./scripts/check_conflicts.sh
+   ```
 
 ## Основные экраны
 
