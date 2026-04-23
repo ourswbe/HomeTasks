@@ -146,7 +146,6 @@ button {
   font-weight: 700;
 }
 
-/* ===== status fixes (merged once) ===== */
 .status.pending {
   color: #8a6400;
   font-weight: 600;
@@ -277,6 +276,21 @@ button {
   border-radius: 10px;
   padding: 0.5rem 0.7rem;
   margin-bottom: 0.6rem;
+}
+
+.students-list {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.student-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #dbe2fb;
+  border-radius: 10px;
+  padding: 0.7rem;
+  background: #f9fbff;
 }
 
 @media (max-width: 760px) {

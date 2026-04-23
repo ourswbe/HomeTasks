@@ -13,6 +13,7 @@
 
 <section class="filter-panel">
   <form method="get" class="filter-form">
+
     <input type="text"
            name="subject"
            placeholder="Фильтр по предмету"
@@ -27,6 +28,7 @@
 
     <button type="submit">Применить</button>
     <a class="ghost-btn" href="{{ url_for('tasks') }}">Сброс</a>
+
   </form>
 </section>
 
@@ -91,6 +93,7 @@
 
             {% for q in task.test_questions %}
               {% set i = loop.index %}
+
               <label>
                 Вопрос {{ i }}: {{ q.question }}
 
@@ -130,6 +133,7 @@
           {% endif %}
 
           <button type="submit">Отправить</button>
+
         </form>
       </details>
       {% endif %}
@@ -191,6 +195,7 @@
         {% else %}
           <p>Нет ответов</p>
         {% endif %}
+
       </div>
 
     {% endif %}

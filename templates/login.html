@@ -2,10 +2,12 @@
 {% block title %}Вход | HomeTasks{% endblock %}
 
 {% block content %}
+
 <section class="auth-card">
   <h1>Вход в систему</h1>
 
   <form method="post" class="form-grid">
+
     <label>Почта
       <input type="email" name="email" required />
     </label>
@@ -15,6 +17,7 @@
     </label>
 
     <button type="submit">Войти</button>
+
   </form>
 
   <p>
@@ -25,4 +28,5 @@
     Нет аккаунта? <a href="{{ url_for('register') }}">Зарегистрироваться</a>
   </p>
 </section>
+
 {% endblock %}

@@ -18,7 +18,9 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "change-me-in-production")
 
 database_url = os.getenv("DATABASE_URL", "sqlite:///hometasks.db")
 if database_url.startswith("postgres://"):
-    database_url = database_url.replace("postgres://", "postgresql+psycopg2://", 1)
+    database_url = database_url.replace(
+        "postgres://", "postgresql+psycopg2://", 1
+    )
 
 app.config["SQLALCHEMY_DATABASE_URI"] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -147,18 +149,8 @@ def login_required(role=None):
                 return redirect(url_for("tasks"))
 
             return func(*args, **kwargs)
-
         return wrapper
     return decorator
-
-
-def get_user_name(user_id):
-    user = db.session.get(User, user_id)
-    return user.name if user else "Неизвестный"
-
-
-def class_options():
-    return CLASS_OPTIONS
 
 
 @app.route("/")
