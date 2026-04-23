@@ -81,6 +81,11 @@ docker compose up --build
    ```bash
    ./scripts/check_conflicts.sh
    ```
+7. Для простых конфликтов (когда изменения одинаковые) можно авто-почистить markers:
+   ```bash
+   python scripts/auto_resolve_conflicts.py .
+   rg "^(<<<<<<<|=======|>>>>>>>)" .
+   ```
 
 ## Основные экраны
 
